@@ -1,0 +1,6 @@
+# For compare.py (local run, no Docker required)
+numpy>=1.24
+matplotlib>=3.7
+
+# For ai_node (installed inside Docker via Dockerfile)
+# torch>=2.2 (CPU-only wheel)

@@ -1,0 +1,64 @@
+version: "3.9"
+
+# ──────────────────────────────────────────────────────────────────────────────
+# AI-CSMA Simulator — Docker Compose
+#
+# Usage:
+#   # Default: 1 medium + 5 AI nodes
+#   docker compose up --build
+#
+#   # Scale to N nodes (e.g., 10 nodes for high-density test):
+#   docker compose up --build --scale ai_node=10
+#
+#   # Rebuild and detach:
+#   docker compose up --build -d
+# ──────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Virtual wireless medium (the "air") ──────────────────────────────────────
+  medium:
+    build:
+      context: ./wireless_medium
+    container_name: wireless_medium
+    environment:
+      MEDIUM_PORT:      9000
+      SLOT_DURATION_MS: 10
+    ports:
+      - "9000:9000/udp"
+    networks:
+      - csma_net
+    restart: unless-stopped
+
+  # ── AI-CSMA node (scale this service for density experiments) ────────────────
+  ai_node:
+    build:
+      context: ./ai_node
+    environment:
+      MEDIUM_HOST:     medium
+      MEDIUM_PORT:     9000
+      ARRIVAL_RATE:    "5.0"     # packets/second (Poisson)
+      MAX_QUEUE:       "20"
+      HISTORY_LEN:     "10"
+      SLOT_MS:         "10"
+      TX_DURATION_MS:  "20"
+      LOG_INTERVAL:    "50"
+      # DQN hyper-parameters (optional overrides)
+      DQN_LR:          "3e-4"
+      DQN_GAMMA:       "0.99"
+      DQN_EPS_START:   "1.0"
+      DQN_EPS_END:     "0.05"
+      DQN_EPS_DECAY:   "500"
+      DQN_BATCH:       "64"
+      DQN_TARGET_UPDATE: "100"
+    depends_on:
+      - medium
+    networks:
+      - csma_net
+    deploy:
+      replicas: 5
+    restart: unless-stopped
+
+networks:
+  csma_net:
+    driver: bridge
