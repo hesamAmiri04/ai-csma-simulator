@@ -1,6 +1,7 @@
-import json
+import json, os
+HERE = os.path.dirname(os.path.abspath(__file__))
 from string import Template
-V = json.load(open('V.json'))
+V = json.load(open(os.path.join(HERE, 'V.json')))
 NS = [2, 4, 6, 8, 10, 12, 16, 20]
 class T(Template): delimiter = '@@'
 
@@ -34,6 +35,6 @@ d = dict(
  nf=f"{max(abs(100*(c-a)/a) for W,a,c,w in V['fz']):.1f}", wf=f"{max(abs(100*(w-a)/a) for W,a,c,w in V['fz']):.1f}",
 )
 import re
-tex = re.sub(r'@@(\w+)@@', r'@@{\1}', open('template.tex').read())
-open('/mnt/user-data/outputs/paper/main.tex', 'w').write(T(tex).substitute(d))
+tex = re.sub(r'@@(\w+)@@', r'@@{\1}', open(os.path.join(HERE, 'template.tex')).read())
+open(os.path.join(HERE, 'main.tex'), 'w').write(T(tex).substitute(d))
 print(d)

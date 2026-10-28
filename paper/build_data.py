@@ -1,15 +1,17 @@
-import csv, sys, collections, json
+import csv, sys, os, collections, json
 import numpy as np
 from scipy import stats
-sys.path.insert(0, '/mnt/user-data/outputs/csma_rl')
+HERE = os.path.dirname(os.path.abspath(__file__))
+REPO = os.path.dirname(HERE)
+sys.path.insert(0, os.path.join(REPO, 'csma_rl'))
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from csmasim import simulate, BEB, FixedCW, bianchi
 
-OUT = '/mnt/user-data/outputs/paper'
-SRC = {'b01': '/mnt/user-data/uploads/raw_1.csv',          # local reward, beta=0.1 (first full sweep)
-       'b001': '/mnt/user-data/uploads/raw_47d583.csv',    # local reward, beta=0.01
-       'team': '/mnt/user-data/uploads/raw_cfe2bf.csv'}    # team reward
+OUT = HERE
+SRC = {'b01': os.path.join(REPO, 'csma_rl', 'results_beta01', 'raw.csv'),          # local reward, beta=0.1 (first full sweep)
+       'b001': os.path.join(REPO, 'csma_rl', 'results_beta001', 'raw.csv'),    # local reward, beta=0.01
+       'team': os.path.join(REPO, 'csma_rl', 'results_team', 'raw.csv')}    # team reward
 NS = [2, 4, 6, 8, 10, 12, 16, 20]
 def load(p):
     D = collections.defaultdict(dict)
@@ -93,7 +95,7 @@ V['pairfix'] = {f'team_{p}_{n}': paired('team', p, 'fixed_best', n) for p in ['d
 V['share'] = {k: {n: (arr(k, 'dqn_one', n, 'node0_share') * n).mean() for n in [4, 10, 20]} for k in ['b01', 'b001', 'team']}
 V['cw20'] = {p: g('team', p, 20, 'mean_cw') for p in ['beb', 'fixed_best', 'analytic', 'dqn_indep', 'dqn_shared']}
 V['cw20_b001'] = {p: g('b001', p, 20, 'mean_cw') for p in ['dqn_indep', 'dqn_shared']}
-json.dump({k: v for k, v in V.items()}, open('V.json', 'w'), default=float, indent=1)
+json.dump({k: v for k, v in V.items()}, open(os.path.join(OUT, 'V.json'), 'w'), default=float, indent=1)
 
 # ---------- figures ----------
 plt.rcParams.update({'font.size': 7.5, 'axes.labelsize': 8, 'legend.fontsize': 6.5, 'lines.linewidth': 1.0, 'lines.markersize': 3.5})
